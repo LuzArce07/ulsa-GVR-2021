@@ -4,55 +4,47 @@ using UnityEngine;
 
 public class VRCamera : MonoBehaviour
 {
+  [SerializeField]
+  Color rayColor = Color.green;
+  [SerializeField, Range(0.1f, 100f)]
+  float rayDistance = 5f;
+  [SerializeField]
+  LayerMask rayLayerDetection;
+  RaycastHit hit;
+  [SerializeField]
+  Transform reticleTrs;
 
-    [SerializeField]
-    Color rayColor = Color.magenta;
+  [SerializeField]
+  Vector3 initialScale;
 
-    [SerializeField, Range(0.1f, 100f)]
-    float rayDistance = 5f;
+  bool objectTouched;
 
-    [SerializeField]
-    LayerMask rayLayerDetection;
+  void Start()
+  {
+      reticleTrs.localScale = initialScale;
+  }
 
-    RaycastHit hit;
-
-    [SerializeField]
-    Transform reticleTrs;
-
-    [SerializeField]
-    Vector3 initialScale;
-
-    bool objectTouched;
-
-
-    void Update()
+  void FixedUpdate()
+  {
+    if(Physics.Raycast(transform.position, transform.forward, out hit, rayDistance, rayLayerDetection))
     {
-        if(Physics.Raycast(transform.position, transform.forward, out hit, rayDistance, rayLayerDetection))
-        {
-
-            if(!objectTouched) objectTouched = true;
-            if(!reticleTrs) return;
-            reticleTrs.position = hit.point;
-            reticleTrs.localScale = initialScale * hit.distance;
-            //reticleTrs.LookAt(hit.normal);
-
-        } else {
-
-            if(objectTouched){
-                
-                objectTouched = false;
-                reticleTrs.localScale = initialScale;
-                reticleTrs.position = new Vector3(transform.position.x, transform.position.y, transform.position.z + 1);
-            
-            }
-        }
-
+      Target target = hit.collider.GetComponent<Target>();
+      target.HandleColor();
+      reticleTrs.position = hit.point;
+      reticleTrs.localScale = initialScale * hit.distance;
+      reticleTrs.localRotation = Quaternion.LookRotation(hit.normal);
     }
-
-    void OnDrawGizmosSelected() 
+    else
     {
-        Gizmos.color = rayColor;
-        Gizmos.DrawRay(transform.position, transform.forward * rayDistance);
+      reticleTrs.localScale = initialScale;
+      reticleTrs.localPosition = Vector3.zero + new Vector3(0, 0, 1);
+      reticleTrs.localRotation = Quaternion.identity;
     }
+  }
 
+  void OnDrawGizmosSelected()
+  {
+    Gizmos.color = rayColor;
+    Gizmos.DrawRay(transform.position, transform.forward * rayDistance);
+  }
 }
