@@ -44,17 +44,29 @@ public class VRCamera : MonoBehaviour
       vrcontrols.Gameplay.VRClic.performed += _=> ClickOverObject();
   }
 
-  void ClickOverObject() => target?.HandleColor();
+  void ClickOverObject(){
+    switch(target?.gameObject.layer)
+      {
+        case 8:
+          target?.handleClic();
+        break;
+
+        case 9: 
+          target?.HandleTextInteraction();
+        break;
+      }
+  }
 
   void FixedUpdate()
   {
     if(Physics.Raycast(transform.position, transform.forward, out hit, rayDistance, rayLayerDetection))
     {
+      
       target = hit.collider.GetComponent<Target>();
-      //target.HandleColor();
       reticleTrs.position = hit.point;
       reticleTrs.localScale = initialScale * hit.distance;
       reticleTrs.localRotation = Quaternion.LookRotation(hit.normal);
+            
     }
     else
     {
